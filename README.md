@@ -10,7 +10,7 @@ tolerância, a compensação, as coordenadas, a área e o desenho da poligonal.
 
 👉 **[Abrir a calculadora](https://maessa-oliveira.github.io/poligonal/)**: já abre com um exemplo fictício.
 
-![Calculadora de poligonal](docs/captura.png)
+![Calculadora de poligonal](docs/demo.gif)
 
 > 🇬🇧 *Browser-based traverse calculator for land surveying: angular and linear misclosure, tolerance
 > checks, Bowditch/transit adjustment, coordinates, area, CSV/DXF export and a printable report.*
