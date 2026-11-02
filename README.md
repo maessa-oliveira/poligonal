@@ -64,6 +64,17 @@ npm run test:e2e  # abre a página num Chromium real e confere cálculo, ediçã
 Os testes geram poligonais a partir de coordenadas conhecidas e conferem que o cálculo devolve as
 mesmas coordenadas, que a compensação fecha exatamente e que os erros são detectados.
 
+## English
+
+**Traverse calculator for land surveying, running entirely in the browser.**
+
+- Closed and connected (fixed-to-fixed) traverses; angular misclosure with `T"·√n` tolerance.
+- Linear misclosure and relative precision (1:N); Bowditch (compass) or transit adjustment; scale factor.
+- Reads total-station field books (`.M21`): backsight/foresight records, averaged forward/back distances.
+- Coordinates, area (Gauss), CSV/DXF export and a printable report. No data leaves your computer.
+
+👉 [Try it](https://maessa-oliveira.github.io/poligonal/) · `npm test` (unit) · `npm run test:e2e` (real browser)
+
 ## Licença
 
 MIT. Os dados de exemplo são fictícios.
