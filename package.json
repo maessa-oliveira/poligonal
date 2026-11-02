@@ -1,0 +1,15 @@
+{
+  "name": "poligonal",
+  "version": "1.0.0",
+  "description": "Calculadora de poligonal topográfica no navegador: fechamento angular e linear, compensação e coordenadas",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/poligonal.test.js",
+    "test:e2e": "node tests/e2e.mjs"
+  },
+  "author": "Maessa Oliveira",
+  "license": "MIT",
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

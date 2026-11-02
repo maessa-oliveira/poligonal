@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poligonal — cálculo de poligonal topográfica</title>
+<meta name="description" content="Calcule poligonais fechadas ou enquadradas no navegador: fechamento angular e linear, tolerâncias, compensação (Bowditch ou trânsito), coordenadas, área e exportação CSV/DXF.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Poligonal — cálculo de poligonal topográfica">
+<meta property="og:description" content="Fechamento angular e linear, compensação, coordenadas e relatório, direto no navegador.">
+<meta property="og:url" content="https://maessa-oliveira.github.io/poligonal/">
+<meta property="og:image" content="https://maessa-oliveira.github.io/poligonal/docs/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M5 24 L9 7 L22 5 L28 18 L17 27 Z' fill='none' stroke='%23e0a64a' stroke-width='2.5' stroke-linejoin='round'/></svg>">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<header class="topo">
+  <div>
+    <h1>Poligonal</h1>
+    <p>Fechamento angular e linear, compensação e coordenadas. Tudo calculado no seu navegador.</p>
+  </div>
+  <nav>
+    <button type="button" id="btnExemplo" class="sec">Carregar exemplo</button>
+    <a href="https://github.com/maessa-oliveira/poligonal" class="sec">Código</a>
+  </nav>
+</header>
+
+<main class="grade">
+  <section class="painel" id="entrada">
+    <h2>Dados de campo</h2>
+
+    <div class="linha">
+      <label for="tipo">Tipo</label>
+      <select id="tipo">
+        <option value="fechada">Fechada (volta ao ponto de partida)</option>
+        <option value="enquadrada">Enquadrada (entre pontos conhecidos)</option>
+      </select>
+    </div>
+
+    <fieldset id="cxFechada">
+      <legend>Partida</legend>
+      <div class="campos3">
+        <label>Azimute P1→P2<input id="azInicial" placeholder="116 03 34" autocomplete="off"></label>
+        <label>E de P1 (m)<input id="e0" inputmode="decimal" placeholder="500000,000"></label>
+        <label>N de P1 (m)<input id="n0" inputmode="decimal" placeholder="8600000,000"></label>
+      </div>
+    </fieldset>
+
+    <fieldset id="cxEnquadrada" hidden>
+      <legend>Pontos de apoio (E ; N)</legend>
+      <div class="campos2">
+        <label>Ré (A)<input id="refA" placeholder="1000 ; 900"></label>
+        <label>Partida (B)<input id="refB" placeholder="1000 ; 1000"></label>
+        <label>Chegada (C)<input id="refC" placeholder="1250 ; 1100"></label>
+        <label>Vante final (D)<input id="refD" placeholder="1350 ; 1100"></label>
+      </div>
+      <p class="dica">A primeira estação é B e a última é C. Os ângulos são lidos de ré para vante.</p>
+    </fieldset>
+
+    <div class="tabela-wrap">
+      <table id="tabEntrada">
+        <thead><tr><th>Estação</th><th title="Ângulo horário lido de ré para vante">Ângulo (ré→vante)</th><th>Dist. (m)</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="acoes">
+      <button type="button" id="btnLinha" class="sec">+ Estação</button>
+      <button type="button" id="btnColar" class="sec">Colar da planilha</button>
+      <label class="arquivo sec" for="arquivo">Abrir arquivo (.M21, CSV, TXT)<input type="file" id="arquivo" accept=".m21,.M21,.csv,.txt,.tsv,text/csv,text/plain" hidden></label>
+    </div>
+    <p id="info" class="dica" hidden></p>
+    <textarea id="colar" hidden rows="5" placeholder="Cole aqui: Estação ; Ângulo ; Distância (uma estação por linha, vindo do Excel ou da caderneta)"></textarea>
+
+    <details class="opcoes">
+      <summary>Tolerâncias e método</summary>
+      <div class="campos3">
+        <label>Tolerância angular (" × √n)<input id="tolAng" type="number" min="1" step="1" value="20"></label>
+        <label>Precisão mínima 1 :<input id="precMin" type="number" min="100" step="500" value="5000"></label>
+        <label>Fator de escala K (distâncias)<input id="fatorK" inputmode="decimal" value="1,00000" title="Ex.: fator de escala UTM combinado; 1 = sem correção"></label>
+        <label>Compensação
+          <select id="metodo">
+            <option value="bowditch">Bowditch (pelas distâncias)</option>
+            <option value="transito">Trânsito (pelas projeções)</option>
+          </select>
+        </label>
+      </div>
+    </details>
+    <p id="erro" class="erro" role="alert"></p>
+  </section>
+
+  <section class="painel" id="resumo" aria-live="polite">
+    <h2>Fechamento</h2>
+    <div class="cartoes">
+      <div class="cartao" id="cAng"><span class="rot">Erro angular</span><b id="vAng">—</b><span id="sAng" class="sub">—</span></div>
+      <div class="cartao" id="cLin"><span class="rot">Erro linear</span><b id="vLin">—</b><span id="sLin" class="sub">—</span></div>
+      <div class="cartao" id="cPrec"><span class="rot">Precisão</span><b id="vPrec">—</b><span id="sPrec" class="sub">—</span></div>
+      <div class="cartao" id="cArea"><span class="rot" id="rArea">Área</span><b id="vArea">—</b><span id="sArea" class="sub">—</span></div>
+    </div>
+    <div id="desenho"></div>
+    <p class="dica">O vetor laranja mostra o erro de fechamento linear antes da compensação, exagerado para ficar visível.</p>
+  </section>
+
+  <section class="painel largo" id="saida">
+    <div class="titulo-acoes">
+      <h2>Planilha de cálculo</h2>
+      <div class="acoes">
+        <button type="button" id="btnCSV">Baixar CSV</button>
+        <button type="button" id="btnDXF">Baixar DXF</button>
+        <button type="button" id="btnRelatorio">Baixar relatório</button>
+        <button type="button" id="btnImprimir" class="sec">Imprimir</button>
+      </div>
+    </div>
+    <div class="tabela-wrap">
+      <table id="tabSaida">
+        <thead><tr>
+          <th>Est.</th><th>Ângulo medido</th><th>Corr.</th><th>Ângulo corrigido</th><th>Azimute</th><th>Dist. (m)</th>
+          <th>ΔE (m)</th><th>ΔN (m)</th><th>cE (mm)</th><th>cN (mm)</th><th>E (m)</th><th>N (m)</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<footer>Código aberto (MIT) · Maessa Oliveira · <a href="https://github.com/maessa-oliveira/poligonal">GitHub</a> · Os dados não saem do seu computador.</footer>
+<script type="module" src="src/app.js"></script>
+</body>
+</html>
